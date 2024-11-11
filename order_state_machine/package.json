@@ -1,0 +1,25 @@
+{
+  "name": "restate-demo-order-processing",
+  "version": "1.0.0",
+  "description": "Restate example implementing a group order state machine",
+  "type": "commonjs",
+  "scripts": {
+    "build": "tsc --noEmitOnError",
+    "service": "ts-node-dev --watch ./src --transpile-only ./src/service/main.ts",
+    "assetapi": "ts-node-dev --watch ./dev/verifier/*.ts --transpile-only ./dev/verifier/asset_inventory.ts",
+    "order": "ts-node-dev --watch ./src --transpile-only ./src/clients/run_single_order.ts",
+    "order-loop": "ts-node-dev --watch ./src --transpile-only ./src/clients/run_single_order_loop.ts",
+    "order-parallel": "ts-node-dev --watch ./src --transpile-only ./src/clients/run_parallel_order.ts"
+  },
+  "dependencies": {
+    "@restatedev/restate-sdk": "^1.4.0",
+    "@restatedev/restate-sdk-clients": "^1.4.0",
+    "ansi-escapes-common": "5.0.0",
+    "chalk": "4.1.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.2",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.4.5"
+  }
+}

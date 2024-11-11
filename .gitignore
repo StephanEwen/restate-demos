@@ -1,0 +1,21 @@
+# IDEs
+.vscode
+.idea
+*.iml
+
+# NodeJS
+node_modules
+dist
+package-lock.json
+
+# Java
+.gradle
+build
+target
+out
+**/src/main/generated
+hs_err_pid*
+
+# Restate Server
+restate-data
+

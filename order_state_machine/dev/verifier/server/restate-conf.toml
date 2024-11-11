@@ -1,0 +1,18 @@
+bind-address = "0.0.0.0:15122"
+advertised-address = "http://127.0.0.1:15122/"
+
+[metadata-store-client]
+address = "http://127.0.0.1:15123/"
+
+[admin]
+bind-address = "0.0.0.0:19070"
+
+[admin.query-engine]
+pgsql-bind-address = "0.0.0.0:19071"
+
+[ingress]
+bind-address = "0.0.0.0:18080"
+
+[metadata-store]
+bind-address = "0.0.0.0:15123"
+
