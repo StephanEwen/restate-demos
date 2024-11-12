@@ -26,5 +26,5 @@ dependencies {
 
 // Set main class
 application {
-  mainClass.set("com.acme.apis.AccountService")
+  mainClass.set("com.acme.apis.svcs.App")
 }

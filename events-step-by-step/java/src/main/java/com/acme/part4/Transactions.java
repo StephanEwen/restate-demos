@@ -1,4 +1,4 @@
-package com.acme.part3;
+package com.acme.part4;
 
 import com.acme.apis.AccountApi;
 import com.acme.types.Transfer;
@@ -8,9 +8,11 @@ import dev.restate.sdk.annotation.Service;
 import dev.restate.sdk.common.TerminalException;
 import dev.restate.sdk.http.vertx.RestateHttpEndpointBuilder;
 
+import java.time.Duration;
 import java.util.UUID;
 
-import static dev.restate.sdk.JsonSerdes.*;
+import static dev.restate.sdk.JsonSerdes.BOOLEAN;
+import static dev.restate.sdk.JsonSerdes.STRING;
 
 @Service(name = "txn")
 public class Transactions {
@@ -34,11 +36,21 @@ public class Transactions {
       return true;
     }
     catch (TerminalException e) {
-      String refundToken = ctx.random().nextUUID().toString();
-      ctx.run("refund", () ->
-          AccountApi.enqueueRefundRequest(req.from, req.cents, refundToken));
 
-      return false;
+      try {
+        ctx.sleep(Duration.ofDays(1));
+
+        ctx.run("deposit", () ->
+            AccountApi.deposit(req.to, req.cents, txnToken));
+        return true;
+      }
+      catch (TerminalException ee) {
+        String refundToken = ctx.random().nextUUID().toString();
+        ctx.run("refund", () ->
+            AccountApi.enqueueRefundRequest(req.from, req.cents, refundToken));
+
+        return false;
+      }
     }
   }
 

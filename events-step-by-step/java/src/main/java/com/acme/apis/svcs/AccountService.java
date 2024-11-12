@@ -1,4 +1,4 @@
-package com.acme.apis;
+package com.acme.apis.svcs;
 
 import com.acme.types.Deposit;
 import com.acme.types.Withdrawal;
@@ -6,7 +6,6 @@ import dev.restate.sdk.ObjectContext;
 import dev.restate.sdk.annotation.Handler;
 import dev.restate.sdk.annotation.VirtualObject;
 import dev.restate.sdk.common.StateKey;
-import dev.restate.sdk.http.vertx.RestateHttpEndpointBuilder;
 
 import static dev.restate.sdk.JsonSerdes.LONG;
 
@@ -31,11 +30,5 @@ public class AccountService {
   public void deposit(ObjectContext ctx, Deposit deposit) {
     final long balance = ctx.get(BALANCE).orElse(100_000L);
     ctx.set(BALANCE, balance + deposit.cents);
-  }
-
-  public static void main(String[] args) {
-    RestateHttpEndpointBuilder.builder()
-        .bind(new AccountService())
-        .buildAndListen(19080);
   }
 }

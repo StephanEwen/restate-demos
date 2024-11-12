@@ -5,6 +5,7 @@ hs_err_pid*
 .gradle
 build
 out
+**/src/main/generated
 
 # IntelliJ
 .idea
@@ -15,3 +16,4 @@ restate-data
 
 # NodeJs
 node_modules
+

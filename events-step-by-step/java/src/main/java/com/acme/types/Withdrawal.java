@@ -2,8 +2,10 @@ package com.acme.types;
 
 public class Withdrawal {
 
-  public final String account;
-  public final long cents;
+  public String account;
+  public long cents;
+
+  public Withdrawal() {}
 
   public Withdrawal(String account, long cents) {
     this.account = account;

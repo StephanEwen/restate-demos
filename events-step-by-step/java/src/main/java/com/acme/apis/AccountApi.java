@@ -1,5 +1,7 @@
 package com.acme.apis;
 
+import com.acme.apis.svcs.RefundServiceClient;
+import com.acme.apis.svcs.accountClient;
 import com.acme.types.Deposit;
 import com.acme.types.Withdrawal;
 import com.acme.util.Util;
@@ -36,15 +38,11 @@ public class AccountApi {
     System.out.printf(" >>> DEPOSIT : %s (%d cents) - token: %s\n", account, cents, token);
   }
 
-  public static void enqueueRefundRequest(String account, long cents, String token) {}
-
-
-
-  public static boolean earmark(String account, long cents, String token) {
-    return true;
+  public static void enqueueRefundRequest(String account, long cents, String token) {
+    RefundServiceClient
+        .connect(RESTATE_URI, account)
+        .enqueueRefundRequest(cents, CallRequestOptions.DEFAULT.withIdempotency(token));
   }
-
-  public static void releaseEarmark(String token) {}
 
 
   private static void demoActions(String account, long amout) {
@@ -53,6 +51,7 @@ public class AccountApi {
     }
 
     if (account.startsWith("9")) {
+      Util.sleep(5_000);
       throw new TerminalException("Account unavailable");
     }
     if (account.startsWith("8")) {

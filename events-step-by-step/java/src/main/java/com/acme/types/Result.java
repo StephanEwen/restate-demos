@@ -1,8 +1,8 @@
 package com.acme.types;
 
 public class Result {
-  public final boolean success;
-  public final long newBalance;
+  public boolean success;
+  public long newBalance;
 
   public Result(boolean success, long newBalance) {
     this.success = success;
