@@ -1,19 +1,21 @@
-# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
-hs_err_pid*
-
-# Java builds,results
-.gradle
-build
-out
-**/src/main/generated
-
-# IntelliJ
+# IDEs
+.vscode
 .idea
 *.iml
 
-# restate
-restate-data
-
-# NodeJs
+# NodeJS
 node_modules
 dist
+package-lock.json
+
+# Java
+.gradle
+build
+target
+out
+**/src/main/generated
+hs_err_pid*
+
+# Restate Server
+restate-data
+
