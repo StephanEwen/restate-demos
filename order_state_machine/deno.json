@@ -1,0 +1,16 @@
+{
+  "imports": {
+    "@restatedev/restate-sdk": "npm:@restatedev/restate-sdk@^1.4.0/fetch",
+    "@restatedev/restate-sdk-clients": "npm:@restatedev/restate-sdk-clients@^1.4.0",
+    "chalk": "npm:chalk@4.1.2",
+    "ansi-escapes": "npm:ansi-escapes-common@5.0.0"
+  },
+  "deploy": {
+    "project": "da834f96-4923-4b41-a331-8f6b825634a8",
+    "exclude": [
+      "**/node_modules"
+    ],
+    "include": [],
+    "entrypoint": "src/services/deno_main.ts"
+  }
+}
