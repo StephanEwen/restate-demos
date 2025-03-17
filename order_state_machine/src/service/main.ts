@@ -1,6 +1,6 @@
 import * as restate from "@restatedev/restate-sdk";
 import { orderService } from "./order_service";
-import { orderWorkflow } from "./book_orders_wf";
+import { orderWorkflow } from "./exec_order_wf";
 import { orderReversalWorkflow } from "./reverse_orders_wf";
 
 // --------------------------------------------------------

@@ -8,7 +8,7 @@ type EarmarkRequest = EarmarkedAsset & { reservationId: string }
 type BookRequest = { orderId: string, reservationId: string }
 
 const DEFAULT_QUANTITY = 1_000_000;
-const EARMARK_EXPIRY_DELAY = 3 * 60 * 1000; // 3 minutes
+const EARMARK_EXPIRY_DELAY = 30 * 60 * 1000; // 30 minutes
 
 const assetInventoryService = restate.object({
     name: "assets",
@@ -26,7 +26,7 @@ const assetInventoryService = restate.object({
             const available = await getAvailable(ctx);
             if (available < req.quantity) {
                 // we throw this as an error, to make sure this bubbles up on the caller side
-                throw new restate.TerminalError(`Not enough available, only ${available} left`);
+                throw new restate.TerminalError(`Not enough available, only ${available} left`, { errorCode: 400 });
             }
 
             // store earmark and new quantity
@@ -60,17 +60,23 @@ const assetInventoryService = restate.object({
 
             const earmarked = await ctx.get(earmarkKey(req.reservationId));
             if (!earmarked) {
-                throw new restate.TerminalError(`Asset not earmarked under id: ${req.reservationId}`);
+                throw new restate.TerminalError(`Asset not earmarked under id: ${req.reservationId}`, { errorCode: 400 });
             }
             if (earmarked.orderId !== req.orderId) {
-                throw new restate.TerminalError(`Asset earmarked for order ${req.reservationId} but for ${earmarked.orderId}`);
+                throw new restate.TerminalError(`Asset earmarked for order ${req.reservationId} but for ${earmarked.orderId}`, { errorCode: 400 });
             }
 
             const sold = (await ctx.get("sold")) ?? 0;
             ctx.set("sold", sold + earmarked.quantity);
+
+            // remember the earmark, but with a quantity of 0 (to allow for idempotent retries)
+            earmarked.quantity = 0;
+            ctx.set(earmarkKey(req.reservationId), earmarked);
             
-            // remove earmark without adding quantity back
-            ctx.clear(earmarkKey(req.reservationId));
+            // schedule expiry of earmark
+            ctx
+            .objectSendClient(assetInventoryService, ctx.key, { delay: EARMARK_EXPIRY_DELAY })
+            .releaseEarmark(req.reservationId);
         },
 
         addBack: async (ctx: restate.ObjectContext<State>, quantity: number) => {
@@ -78,7 +84,7 @@ const assetInventoryService = restate.object({
 
             const sold = (await ctx.get("sold")) ?? 0;
             if (sold < quantity) {
-                throw new restate.TerminalError("Trying to reverse more than was booked before");
+                throw new restate.TerminalError("Trying to reverse more than was booked before", { errorCode: 400 });
             }
             ctx.set("sold", sold - quantity);
 

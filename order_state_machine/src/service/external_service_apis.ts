@@ -14,15 +14,15 @@ import type { BookedItem, EarmarkedItem } from "../common/orders_types";
 // -----------------------------------------------------
 
 type Mode = "API" | "MOCK";
-const mode: Mode = "MOCK"; 
+const mode: Mode = "MOCK";
 
 // ---- external API params ----
 // see <root>/dev/verifier for details
 const APIS_BASE_URL = "http://localhost:18080";
 
 // ---- mock call parameters ----
-const MOCK_ORDER_OP_DELAY = 1_000;
-const MOCK_TRANSIENT_ERROR_PROB = 0.05;
+const MOCK_ORDER_OP_DELAY = 0;
+const MOCK_TRANSIENT_ERROR_PROB = 0.1;
 const MOCK_FAILED_EARMARK_PROB = 0.0;
 const MOCK_FAILED_ORDER_PROB = 0.05;
 
@@ -123,8 +123,8 @@ async function makeApiCall<T>(assetName: string, method: string, body: any): Pro
   const encodedName = encodeURIComponent(assetName);
   const url = `${APIS_BASE_URL}/assets/${encodedName}/${method}`;
 
-
-try {
+  let responseText: string;
+  try {
     const response = await fetch(url, {
       method: "POST",
       headers: {
@@ -137,17 +137,23 @@ try {
       const errMessage = await response.text();
       throw new TerminalError(`Request failed (${response.status}): ${errMessage}`);
     }
-    const responseText = await response.text();
+
+    responseText = await response.text();
     if (!responseText) {
       return undefined as T
     }
-
-    const responseJson = JSON.parse(responseText);
-    return responseJson as T;
-  } catch (e: any) {
+  }
+  catch (e: any) {
     if (e instanceof TerminalError) {
       throw e;
     }
-    throw new TerminalError(`HTTP Request to ${url} failed: ${e.message}`, {cause: e});
+    throw new Error(`HTTP Request to ${url} failed: ${e.message}`, {cause: e});
+  }
+
+  try {
+    const responseJson = JSON.parse(responseText);
+    return responseJson as T;
+  } catch (e: any) {
+    throw new TerminalError("Failed to parse response: " + responseText, { cause: e });
   }
 }

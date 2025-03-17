@@ -1,6 +1,4 @@
 import * as restate from "@restatedev/restate-sdk";
-import { WorkflowContext } from "@restatedev/restate-sdk";
-
 import * as apis from "./external_service_apis";
 import type { EarmarkedItem, BookedItem } from "../common/orders_types";
 
@@ -8,7 +6,8 @@ import type { EarmarkedItem, BookedItem } from "../common/orders_types";
 export const orderWorkflow = restate.workflow({
   name: "makeOrders",
   handlers: {
-    run: async (ctx: WorkflowContext, req: { orderId: string, orders: EarmarkedItem[] }) => {
+
+    run: async (ctx: restate.WorkflowContext, req: { orderId: string, orders: EarmarkedItem[] }) => {
       const { orderId, orders } = req;
 
       // sagas-style transaction that executes a sequence or orders
@@ -21,14 +20,17 @@ export const orderWorkflow = restate.workflow({
           );
           completedOrders.push(bookedOrder);
         }
+
         return { success: true, orders: completedOrders };
       }
       catch (e) {
         if (e instanceof restate.TerminalError) {
+
           // sagas undo
           for (const o of completedOrders) {
             await ctx.run("undo order " + o.orderId, () => apis.reverseOrderItem(o))
           }
+
           return { success: false, orders: [] };
         } else {
           throw e;

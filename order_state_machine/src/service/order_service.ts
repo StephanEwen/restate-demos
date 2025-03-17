@@ -3,7 +3,7 @@ import { ObjectContext, ObjectSharedContext } from "@restatedev/restate-sdk";
 import * as apis from "./external_service_apis";
 
 import type { Asset, EarmarkedItem, BookedItem } from "../common/orders_types";
-import type { OrderWorkflow } from "./book_orders_wf";
+import type { OrderWorkflow } from "./exec_order_wf";
 import type { OrderReversalWorkflow } from "./reverse_orders_wf";
 
 const shared = restate.handlers.object.shared;
