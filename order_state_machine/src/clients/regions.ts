@@ -10,8 +10,8 @@ export type Region = {
 // Replace this with the actual endpoints in case you run a proper distributed
 // setup.
 export const REGIONS: Region[] = [
-    { name: "us-east-1", endpoint: "http://localhost:8080/" },
-    { name: "us-west-1", endpoint: "http://localhost:8082/" }
+    { name: "client-1", endpoint: "http://localhost:8080/" },
+    { name: "client-2", endpoint: "http://localhost:8080/" }
 ]
 
 if (REGIONS.length === 0) {
