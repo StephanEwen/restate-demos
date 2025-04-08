@@ -1,0 +1,47 @@
+x-environment: &common-env
+  RESTATE_CLUSTER_NAME: "restate-cluster"
+  RESTATE_METADATA_CLIENT__ADDRESSES: '["http://restate-1:5122","http://restate-2:5122","http://restate-3:5122"]'
+  RESTATE_BIFROST__DEFAULT_PROVIDER: "replicated"
+  RESTATE_METADATA_SERVER__TYPE: "replicated"
+
+x-defaults: &defaults
+  image: ghcr.io/restatedev/restate:1.3.0-rc.2
+  extra_hosts:
+    - "host.docker.internal:host-gateway"
+
+services:
+  restate-1:
+    <<: *defaults
+    ports:
+      - "8080:8080"  # Ingress
+      - "9070:9070"  # Admin
+    environment:
+      <<: *common-env
+      RESTATE_NODE_NAME: restate-1
+      RESTATE_FORCE_NODE_ID: 1
+      RESTATE_ADVERTISED_ADDRESS: "http://restate-1:5122"  # Other Restate nodes must be able to reach us using this address
+      RESTATE_AUTO_PROVISION: "true"                       # Only the first node provisions the cluster
+
+  restate-2:
+    <<: *defaults
+    ports:
+      - "29070:9070"
+      - "28080:8080"
+    environment:
+      <<: *common-env
+      RESTATE_NODE_NAME: restate-2
+      RESTATE_FORCE_NODE_ID: 2
+      RESTATE_ADVERTISED_ADDRESS: "http://restate-2:5122"
+      RESTATE_AUTO_PROVISION: "false"
+
+  restate-3:
+    <<: *defaults
+    ports:
+      - "39070:9070"
+      - "38080:8080"
+    environment:
+      <<: *common-env
+      RESTATE_NODE_NAME: restate-3
+      RESTATE_FORCE_NODE_ID: 3
+      RESTATE_ADVERTISED_ADDRESS: "http://restate-3:5122"
+      RESTATE_AUTO_PROVISION: "false"
