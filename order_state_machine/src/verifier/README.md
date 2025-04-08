@@ -1,7 +1,7 @@
 # External API services / Verifier
 
-This package contains implementations of the external asset inventory API (called
-by the order processing system). The implementation verifies correct interaction from
+This package contains implementations of the inventory API (called by the order processing system).
+The implementation verifies correct interaction from
 the order processing system and act as a verification that the processing logic is
 consistent.
 
@@ -14,19 +14,16 @@ To run them, use the following steps:
 
 * Bring up a Restate server. While you can reuse any running instance (like the one
   that order processing services use), the simplest way is to start a dedicated instance
-  using the config in `dev/verifier/server/restate-conf.toml`. Just cd to that directory
-  and run `restate-server --config-file="./restate-conf.toml"`
+  using the config in `src/verifier/restate-conf.toml`:
+  `cd src/verifier && restate-server --config-file=./restate-conf.toml`
 
-  To interact with that server, simply use the CLI from within `dev/verifier/server` and
+  To interact with that server, you can use the CLI from within `verifier` and 
   it will pick up the right admin port from the `.env` file.
 
-* Start the asset inventory API: `npm run assetapi`
-
-* Register the services `restate dep add localhost:59080`
-
+* Start the asset inventory API: `npm run inventory-api`
+* Register the services `restate dep add localhost:59080` or use the UI at `http://localhost:19070`
 * Change the file `src/service/external_service_apis.ts` and replace
-  `const mode: Mode = "MOCK";` with `const mode: Mode = "API";`
-  Make sure the deployment of the order processing state machine uses that modified file.
+  `const mode: Mode = "MOCK";` with `const mode: Mode = "API";`.
 
 ### Verifying integrity
 

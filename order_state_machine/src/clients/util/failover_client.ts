@@ -1,6 +1,6 @@
 // deno-lint-ignore-file no-explicit-any
 import * as restate from "@restatedev/restate-sdk-clients";
-import { Region, RegionSelector } from "../regions";
+import { Endpoint, EndpointSelector } from "../regions";
 import { sleep, withTimeout } from "../../common/util";
 import { ConsoleReporter, Reporter } from "../output/output";
 import { randomUUID } from "node:crypto";
@@ -16,7 +16,7 @@ export function regionFailoverClient<D>(
         opts: restate.VirtualObjectDefinitionFrom<D>,
         key: string,
         connectionProps: {
-            regionSelector: RegionSelector,
+            regionSelector: EndpointSelector,
             timeout: number,
             maxAttempts?: number,
             retryDeplay?: number
@@ -32,11 +32,11 @@ export function regionFailoverClient<D>(
 
     reporter ??= ConsoleReporter;
 
-    const makeCall = (region: Region, handler: string | symbol, args: any[]) => {
+    const makeCall = (region: Endpoint, handler: string | symbol, args: any[]) => {
         reporter.invocationStart(String(handler), region);
     
         const client = restate
-            .connect( { url: region.endpoint } )
+            .connect( { url: region.address } )
             .objectClient<D>(opts, key) as any;
         
         const resultPromise = client[handler](...args) as Promise<any>;
@@ -52,7 +52,7 @@ export function regionFailoverClient<D>(
 
                 for (let attempt = 1; attempt <= maxAttempts; attempt++) {
                     try {
-                        const region = regionSelector.getNextRegion();
+                        const region = regionSelector.getNextEndpoint();
                         const result = await makeCall(region, handler, argsWithKey);
                         reporter.invocationComplete();
                         return result;

@@ -1,6 +1,6 @@
 import * as restate from "@restatedev/restate-sdk";
-import * as apis from "./external_service_apis";
-import type { EarmarkedItem, BookedItem } from "../common/orders_types";
+import * as apis from "./inventory_api";
+import type { EarmarkedItem, BookedItem } from "../common/types";
 
 
 export const orderWorkflow = restate.workflow({
@@ -15,10 +15,13 @@ export const orderWorkflow = restate.workflow({
       const completedOrders: BookedItem[] = [];
       try {
         for (const order of orders) {
-          const bookedOrder = await ctx.run("book item " + order.reservationId, () =>
+          // we remember this first, to avoid missing the undo in case of a failure
+          completedOrders.push({ orderId, asset: order.asset });
+
+          // call the API the order item
+          await ctx.run("book item " + order.reservationId, () =>
             apis.bookOrderItem(orderId, order)
           );
-          completedOrders.push(bookedOrder);
         }
 
         return { success: true, orders: completedOrders };

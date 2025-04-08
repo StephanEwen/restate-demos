@@ -1,15 +1,33 @@
 import * as restate from "@restatedev/restate-sdk";
+import { clear } from "console";
 
+/*
+ * types defining the state
+ */
+type EarmarkKey = `e_${string}`;
+type OrderKey = `o_${string}`;
 type EarmarkedAsset = { orderId: string, quantity: number };
-type Earmarks = Record<string, EarmarkedAsset>
-type State = { available: number, sold: number } & Earmarks;
+type Earmarks = Record<EarmarkKey, EarmarkedAsset> // map: reservation-id -> { orderid, quantity}
+type CompletedOrders = Record<OrderKey, number> // map: order-id -> { quantity}
+type State = { available: number, sold: number } & Earmarks & CompletedOrders;
 
+/*
+ * types for request parameters
+ */
 type EarmarkRequest = EarmarkedAsset & { reservationId: string }
 type BookRequest = { orderId: string, reservationId: string }
 
+/*
+ * constants
+ */
 const DEFAULT_QUANTITY = 1_000_000;
 const EARMARK_EXPIRY_DELAY = 30 * 60 * 1000; // 30 minutes
 
+/*
+ * The inventory as a Virtual Object.
+ *  - key is the asset name
+ *  - state includes 'available', 'sold', as well as 'e_...' entries for earmarks and 'o_...' entries for orders.
+ */
 const assetInventoryService = restate.object({
     name: "assets",
     handlers: {
@@ -58,6 +76,12 @@ const assetInventoryService = restate.object({
         markBooked: async (ctx: restate.ObjectContext<State>, req: BookRequest) => {
             typecheckBookRequest(req);
 
+            // check if this is a repeated call for the same order
+            const order = await ctx.get(orderKey(req.orderId));
+            if (order) {
+                return;
+            }
+
             const earmarked = await ctx.get(earmarkKey(req.reservationId));
             if (!earmarked) {
                 throw new restate.TerminalError(`Asset not earmarked under id: ${req.reservationId}`, { errorCode: 400 });
@@ -69,28 +93,24 @@ const assetInventoryService = restate.object({
             const sold = (await ctx.get("sold")) ?? 0;
             ctx.set("sold", sold + earmarked.quantity);
 
-            // remember the earmark, but with a quantity of 0 (to allow for idempotent retries)
-            earmarked.quantity = 0;
-            ctx.set(earmarkKey(req.reservationId), earmarked);
-            
-            // schedule expiry of earmark
-            ctx
-            .objectSendClient(assetInventoryService, ctx.key, { delay: EARMARK_EXPIRY_DELAY })
-            .releaseEarmark(req.reservationId);
+            ctx.set(orderKey(req.orderId), earmarked.quantity);
+            ctx.clear(earmarkKey(req.reservationId))
         },
 
-        addBack: async (ctx: restate.ObjectContext<State>, quantity: number) => {
-            typecheckQuantity(quantity);
+        revertOrder: async (ctx: restate.ObjectContext<State>, orderId: string) => {
+            typecheckId(orderId);
 
-            const sold = (await ctx.get("sold")) ?? 0;
-            if (sold < quantity) {
-                throw new restate.TerminalError("Trying to reverse more than was booked before", { errorCode: 400 });
+            const orderQuantity = await ctx.get(orderKey(orderId));
+            if (orderQuantity === null) {
+                return; // was never executed, an undo for a request that never made it
             }
-            ctx.set("sold", sold - quantity);
 
             const available = await getAvailable(ctx);
-            ctx.set("available", available + quantity);
+            const sold = (await ctx.get("sold")) ?? 0;
 
+            ctx.set("sold", sold - orderQuantity);
+            ctx.set("available", available + orderQuantity);
+            ctx.clear(orderKey(orderId));
         },
 
         getAvailable: restate.handlers.object.shared(
@@ -126,8 +146,12 @@ async function getAvailable(ctx: restate.ObjectSharedContext<State>): Promise<nu
     return (await ctx.get("available")) ?? DEFAULT_QUANTITY;
 }
 
-function earmarkKey(reservationId: string): string {
-    return "e_" + reservationId;
+function earmarkKey(reservationId: string): EarmarkKey {
+    return `e_${reservationId}`;
+}
+
+function orderKey(orderId: string): OrderKey {
+    return `o_${orderId}`;
 }
 
 function earmarkedAssets(request: EarmarkRequest): EarmarkedAsset {

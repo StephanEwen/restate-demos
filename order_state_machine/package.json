@@ -6,7 +6,7 @@
   "scripts": {
     "build": "tsc --noEmitOnError",
     "service": "tsx watch ./src/service/main.ts",
-    "assetapi": "tsx watch ./dev/verifier/asset_inventory.ts",
+    "inventory": "tsx ./src/verifier/asset_inventory.ts",
     "order": "tsx watch ./src/clients/run_single_order.ts",
     "order-loop": "tsx watch ./src/clients/run_single_order_loop.ts",
     "order-parallel": "tsx watch ./src/clients/run_parallel_order.ts"

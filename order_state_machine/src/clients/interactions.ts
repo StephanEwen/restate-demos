@@ -2,9 +2,9 @@ import { randomUUID } from "node:crypto";
 import { randomElement, sleep } from "../common/util";
 import { regionFailoverClient } from "./util/failover_client";
 import { randomAsset } from "./util/testdata";
-import { randomBackupRegion, randomRegion, stickyRegion, type RegionSelector } from "./regions";
+import { randomBackupEndpoint, randomEndpoint, stickyEndpoint, type EndpointSelector } from "./regions";
 
-import type { Asset, BookedItem, EarmarkedItem } from "../common/orders_types";
+import type { Asset, BookedItem, EarmarkedItem } from "../common/types";
 import type { BulkOrderService, OrderState } from "../service/order_service";
 import type { Reporter } from "./output/output";
 
@@ -39,7 +39,7 @@ export function randomScript(): Script {
 //                        Single Order Processing
 // ----------------------------------------------------------------------------
 
-export async function runSingleOrderProcess(script: Script, region: RegionSelector, reporter: Reporter) {
+export async function runSingleOrderProcess(script: Script, region: EndpointSelector, reporter: Reporter) {
     
     const bulkOrderId = randomUUID();
 
@@ -155,19 +155,19 @@ export async function runConcurrentOrderProcess(
     const { commonReporter, reporter1, reporter2 } = reporters;
 
     const bulkOrderId = randomUUID();
-    const region1 = randomRegion();
-    const region2 = randomBackupRegion(region1);
+    const region1 = randomEndpoint();
+    const region2 = randomBackupEndpoint(region1);
 
     const client1 = regionFailoverClient<BulkOrderService>(
             { name: "bulkOrder"},
             bulkOrderId,
-            { regionSelector: stickyRegion(region1), timeout: 12_000 },
+            { regionSelector: stickyEndpoint(region1), timeout: 12_000 },
             reporter1);
     
     const client2 = regionFailoverClient<BulkOrderService>(
         { name: "bulkOrder"},
         bulkOrderId,
-        { regionSelector: stickyRegion(region2), timeout: 12_000 },
+        { regionSelector: stickyEndpoint(region2), timeout: 12_000 },
         reporter2);
 
     // Open Order

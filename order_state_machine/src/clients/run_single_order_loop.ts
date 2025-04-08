@@ -1,5 +1,5 @@
 
-import { randomlySwitchingRegion, randomStickyRegion, stickyRegionByName, type RegionSelector } from "./regions";
+import { randomlySwitchingEndpoint, randomStickyEndpoint, stickyEndpointByName, type EndpointSelector } from "./regions";
 import { randomScript, runSingleOrderProcess } from "./interactions";
 import { ConsoleReporter, type Reporter } from "./output/output";
 import { sleep } from "../common/util";
@@ -7,12 +7,12 @@ import { sleep } from "../common/util";
 const DELAY_BETWEEN_ORDERS = 2_000;
 
 const region = process.argv[2] ?? "RANDOM_STICKY";
-const regionSelector: () => RegionSelector =
+const regionSelector: () => EndpointSelector =
     region === "ALTERNATING"
-        ? randomlySwitchingRegion
+        ? randomlySwitchingEndpoint
         : (region === "RANDOM_STICKY"
-            ? randomStickyRegion
-            : () => stickyRegionByName(region));
+            ? randomStickyEndpoint
+            : () => stickyEndpointByName(region));
 
 async function runSingleOrderLoop() {
     const reporter: Reporter = ConsoleReporter;

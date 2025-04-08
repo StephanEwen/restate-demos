@@ -1,8 +1,8 @@
 import * as restate from "@restatedev/restate-sdk";
 import { WorkflowContext } from "@restatedev/restate-sdk";
 
-import * as apis from "./external_service_apis";
-import type { BookedItem } from "../common/orders_types";
+import * as apis from "./inventory_api";
+import type { BookedItem } from "../common/types";
 
 
 export const orderReversalWorkflow = restate.workflow({

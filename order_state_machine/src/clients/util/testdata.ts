@@ -1,5 +1,5 @@
 import { randomElement } from "../../common/util";
-import type { Asset } from "../../common/orders_types";
+import type { Asset } from "../../common/types";
 
 export function randomAsset(): Asset {
     const name = randomElement(assetNames);

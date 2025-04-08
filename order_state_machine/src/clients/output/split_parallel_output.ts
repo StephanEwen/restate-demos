@@ -1,5 +1,5 @@
 import { errToString, type Reporter } from "./output";
-import type { Region } from "../regions.ts";
+import type { Endpoint } from "../regions.ts";
 import chalk from "chalk";
 import ansiEscapes from "ansi-escapes-common";
 
@@ -84,7 +84,7 @@ class ColumnReporter implements Reporter {
     this.newLine();
     return this;
   }
-  invocationStart(handler: string, region: Region): Reporter {
+  invocationStart(handler: string, region: Endpoint): Reporter {
     const text = `Calling ${chalk.bold(chalk.blue(handler + "()"))} ----> ${chalk.magenta(region.name)} ----> `
     const len = 24 + handler.length + region.name.length;
     this.write(text, len);

@@ -1,10 +1,10 @@
 import { RestateError } from "@restatedev/restate-sdk";
-import type { Region } from "../regions.ts";
+import type { Endpoint } from "../regions.ts";
 import chalk from "chalk";
 
 export interface Reporter {
     msg(msg: string): Reporter;
-    invocationStart(handler: string, region: Region): Reporter;
+    invocationStart(handler: string, region: Endpoint): Reporter;
     connectionError(err: unknown): Reporter;
     invocationComplete(): Reporter;
     n(): Reporter;
@@ -16,7 +16,7 @@ export const ConsoleReporter: Reporter = {
         console.log(msg);
         return ConsoleReporter;
     },
-    invocationStart: (handler: string, region: Region): Reporter => {
+    invocationStart: (handler: string, region: Endpoint): Reporter => {
         process.stdout.write(`Calling ${chalk.bold(chalk.blue(handler + "()"))} ----> ${chalk.magenta(region.name)} ----> `);
         return ConsoleReporter;
     },

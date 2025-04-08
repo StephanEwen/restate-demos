@@ -1,69 +1,70 @@
 import { randomElement } from "../common/util";
 
-export type Region = {
+export type Endpoint = {
     name: string,
-    endpoint: string
+    address: string
 }
 
-// The regions and their endpoints. This is set to different local ports for
-// a local multi-node setup.
+// The endpoints This can be set to different distributed nodes or regions,
+// or to different local ports for a local multi-node setup.
 // Replace this with the actual endpoints in case you run a proper distributed
 // setup.
-export const REGIONS: Region[] = [
-    { name: "client-1", endpoint: "http://localhost:8080/" },
-    { name: "client-2", endpoint: "http://localhost:8080/" }
+export const ENDPOINTS: Endpoint[] = [
+    { name: "node-1", address: "http://localhost:8080/" },
+    { name: "node-2", address: "http://localhost:28080/" },
+    { name: "node-3", address: "http://localhost:38080/" },
 ]
 
-if (REGIONS.length === 0) {
-    throw new Error("Need at least one region");
+if (ENDPOINTS.length === 0) {
+    throw new Error("Need at least one endpoint");
 }
 
-export interface RegionSelector {
-    getNextRegion(): Region;
+export interface EndpointSelector {
+    getNextEndpoint(): Endpoint;
     failover(): void;
 }
 
-export function randomStickyRegion(): RegionSelector {
-    return stickyRegion(randomRegion());
+export function randomStickyEndpoint(): EndpointSelector {
+    return stickyEndpoint(randomEndpoint());
 }
 
-export function stickyRegion(region: Region): RegionSelector {
-    let currentRegion = region;
+export function stickyEndpoint(endpoint: Endpoint): EndpointSelector {
+    let currentEndpoint = endpoint;
     return {
-        getNextRegion: () => currentRegion,
-        failover: () => { currentRegion = randomBackupRegion(currentRegion); }
+        getNextEndpoint: () => currentEndpoint,
+        failover: () => { currentEndpoint = randomBackupEndpoint(currentEndpoint); }
     }
 }
 
-export function stickyRegionByName(name: string): RegionSelector {
-    const region = REGIONS.find((r) => r.name === name);
-    if (region) {
-        return stickyRegion(region);
+export function stickyEndpointByName(name: string): EndpointSelector {
+    const endpoint = ENDPOINTS.find((r) => r.name === name);
+    if (endpoint) {
+        return stickyEndpoint(endpoint);
     }
-    throw new Error("No region found with name: " + name);
+    throw new Error("No endpoint found with name: " + name);
 }
 
-export function randomlySwitchingRegion(): RegionSelector {
-    let failoverRegion: Region | undefined = undefined;
-    let lastRegion: Region | undefined = undefined;
+export function randomlySwitchingEndpoint(): EndpointSelector {
+    let failoverEndpoint: Endpoint | undefined = undefined;
+    let lastEndpoint: Endpoint | undefined = undefined;
     return {
-        getNextRegion: () => failoverRegion ? failoverRegion : (lastRegion = randomRegion()),
-        failover: () => { failoverRegion = randomBackupRegion(failoverRegion ?? lastRegion!); }
+        getNextEndpoint: () => failoverEndpoint ? failoverEndpoint : (lastEndpoint = randomEndpoint()),
+        failover: () => { failoverEndpoint = randomBackupEndpoint(failoverEndpoint ?? lastEndpoint!); }
     }
 }
 
-export function randomRegion() {
-    return randomElement(REGIONS);
+export function randomEndpoint() {
+    return randomElement(ENDPOINTS);
 }
 
-export function randomBackupRegion(primaryRegion: Region): Region {
-    if (primaryRegion === undefined) {
-        throw new Error("undefined primary region when selecting backup");
+export function randomBackupEndpoint(primaryEndpoint: Endpoint): Endpoint {
+    if (primaryEndpoint === undefined) {
+        throw new Error("undefined primary endpoint when selecting backup");
     }
 
-    const backupCandidates = REGIONS.filter((candidate) => candidate.name !== primaryRegion.name);
+    const backupCandidates = ENDPOINTS.filter((candidate) => candidate.name !== primaryEndpoint.name);
     if (backupCandidates.length === 0) {
-        throw new Error("No other region available");
+        throw new Error("No other endpoint available");
     }
     
     return randomElement(backupCandidates);

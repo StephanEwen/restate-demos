@@ -1,6 +1,6 @@
 import { TerminalError } from "@restatedev/restate-sdk";
 import { sleep } from "../common/util";
-import type { BookedItem, EarmarkedItem } from "../common/orders_types";
+import type { BookedItem, EarmarkedItem } from "../common/types";
 
 // -----------------------------------------------------
 //  The mode here is set to MOCK by default to make this
@@ -17,14 +17,17 @@ type Mode = "API" | "MOCK";
 const mode: Mode = "MOCK";
 
 // ---- external API params ----
-// see <root>/dev/verifier for details
+// see src/verifier/ for details
 const APIS_BASE_URL = "http://localhost:18080";
 
 // ---- mock call parameters ----
-const MOCK_ORDER_OP_DELAY = 0;
-const MOCK_TRANSIENT_ERROR_PROB = 0.1;
-const MOCK_FAILED_EARMARK_PROB = 0.0;
-const MOCK_FAILED_ORDER_PROB = 0.05;
+const MOCK_ORDER_OP_DELAY = 0 // 50;
+const MOCK_ORDER_OP_DELAY_JITTER = 0 // 50;
+const MOCK_TRANSIENT_ERROR_PROB = 0 // 0.2;
+const MOCK_FAILED_EARMARK_PROB = 0 // 0.1;
+const MOCK_FAILED_ORDER_PROB = 0 // 0.1;
+
+
 
 export async function earmarkAssets(orderId: string, orderItem: EarmarkedItem): Promise<boolean> {
   let success: boolean;
@@ -98,8 +101,7 @@ export async function bookOrderItem(orderId: string, orderItem: EarmarkedItem): 
 
 export async function reverseOrderItem(orderItem: BookedItem): Promise<true> {
   if (mode === "API") {
-    const request: number = orderItem.asset.quantity;
-    await makeApiCall(orderItem.asset.name, "addBack", request);
+    await makeApiCall(orderItem.asset.name, "revertOrder", orderItem.orderId);
   } else {
     // mode === "MOCK"
     await delay();
@@ -110,7 +112,7 @@ export async function reverseOrderItem(orderItem: BookedItem): Promise<true> {
 }
 
 function delay() {
-  return sleep(MOCK_ORDER_OP_DELAY + Math.random() * 100);
+  return sleep(MOCK_ORDER_OP_DELAY + Math.random() * MOCK_ORDER_OP_DELAY_JITTER);
 }
 
 function maybeCauseTransientError() {

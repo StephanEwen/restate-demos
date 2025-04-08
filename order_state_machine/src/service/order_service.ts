@@ -1,8 +1,8 @@
 import * as restate from "@restatedev/restate-sdk";
 import { ObjectContext, ObjectSharedContext } from "@restatedev/restate-sdk";
-import * as apis from "./external_service_apis";
+import * as apis from "./inventory_api";
 
-import type { Asset, EarmarkedItem, BookedItem } from "../common/orders_types";
+import type { Asset, EarmarkedItem, BookedItem } from "../common/types";
 import type { OrderWorkflow } from "./exec_order_wf";
 import type { OrderReversalWorkflow } from "./reverse_orders_wf";
 
